@@ -1,9 +1,11 @@
-from PySide2.QtWidgets import QMainWindow, QWidget, QApplication
+from PySide2.QtWidgets import QMainWindow, QWidget, QApplication, QDialog
 from PySide2.QtGui import QPalette, QColor
 
 from ..logging import get_logger, log_func_call
 from ..app import PyApp
-# from ..utils.windows import set_high_dpi_support
+
+from .exc import ExcHandlingQApp
+from .qrc import compile_qrc, import_qrc
 
 STATUS_LABEL = 'status_label'  # used in stylesheet for status label
 
@@ -38,7 +40,8 @@ class QtWidgetMixin(QWidget):
     @log_func_call
     def get_qtwindow(self):
         parent = self
-        while not isinstance(parent, (QMainWindow, QApplication)):
+        while not isinstance(parent, (QMainWindow, QApplication,
+                                      ExcHandlingQApp)):
             parent = parent.parent()
         return parent
 
@@ -99,7 +102,7 @@ class ViewConcept:
 
 # windows
 
-class QtWindowWrapper(QtGetWindowMixin, ViewConcept):
+class QtDialogWrapper(QtGetWindowMixin, ViewConcept):
     @log_func_call
     def __init__(self, basetitle: str, controller: 'QtChildWindowController',
                  *args, **kwargs):
@@ -109,28 +112,16 @@ class QtWindowWrapper(QtGetWindowMixin, ViewConcept):
         qtroot = self.create_qtroot(*args, **kwargs)
         self.qtroot = qtroot
 
-        basewidget = self.create_basewidget()
-        self.basewidget = basewidget
-        qtroot.setCentralWidget(basewidget.qtroot)
-
         self.basetitle = basetitle
         self.update_title()
 
     @log_func_call
-    def create_qtroot(self, *args, **kwargs) -> QMainWindow:
-        return QMainWindow(*args, **kwargs)
-
-    @log_func_call
-    def create_basewidget(self) -> QtWindowBaseWidgetWrapper:
-        raise NotImplementedError('Abstract method not implemented')
+    def create_qtroot(self, *args, **kwargs):
+        return QDialog(*args, **kwargs)
 
     @log_func_call
     def get_window(self):
         return self
-
-    @log_func_call
-    def get_qtbasewidget(self):
-        return self.basewidget.qtroot
 
     @log_func_call
     def update_title(self, subtitle: str = None):
@@ -151,6 +142,30 @@ class QtWindowWrapper(QtGetWindowMixin, ViewConcept):
     @log_func_call
     def show(self):
         self.qtroot.show()
+
+
+class QtWindowWrapper(QtDialogWrapper):
+    @log_func_call
+    def __init__(self, basetitle: str, controller: 'QtWindowController',
+                 *args, **kwargs):
+        QtDialogWrapper.__init__(self, basetitle, controller)
+        ViewConcept.__init__(self, controller)
+        qtroot: QMainWindow = self.qtroot
+        basewidget = self.create_basewidget()
+        self.basewidget = basewidget
+        qtroot.setCentralWidget(basewidget.qtroot)
+
+    @log_func_call
+    def create_qtroot(self, *args, **kwargs) -> QMainWindow:
+        return QMainWindow(*args, **kwargs)
+
+    @log_func_call
+    def create_basewidget(self) -> QtWindowBaseWidgetWrapper:
+        raise NotImplementedError('Abstract method not implemented')
+
+    @log_func_call
+    def get_qtbasewidget(self):
+        return self.basewidget.qtroot
 
 
 class QtChildWindowWrapper(QtHasViewParent, QtWindowWrapper):
@@ -187,13 +202,24 @@ class QtWindowController(ViewController, QtGetWindowMixin):
     def get_window(self):
         return self.window
 
+    @log_func_call
+    def show(self):
+        self.window.show()
 
-class QtChildWindowController(QtWindowController):
+
+class QtDialogController(QtWindowController):
     @log_func_call
     def __init__(self, parentwindow: QtWindowWrapper):
         QtWindowController.__init__(self)
-        self.window: QtChildWindowWrapper = None
+        self.window: QtDialogWrapper = None
         self.parentwindow = parentwindow
+
+
+class QtChildWindowController(QtDialogController):
+    @log_func_call
+    def __init__(self, parentwindow: QtWindowWrapper):
+        QtDialogController.__init__(self, parentwindow)
+        self.window: QtChildWindowWrapper = None
 
 
 class QtApplicationBase:
@@ -213,6 +239,11 @@ class QtApplicationBase:
     def init_gui(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
         log = get_logger()
         log.debug('starting app main')
+
+        # Ensure Qt resources are registered before any widgets are created
+        compile_qrc()
+        import_qrc()
+
         self.qtroot = self.create_qt_inst(app_args)
 
         # set_high_dpi_support(log=log)
@@ -297,7 +328,104 @@ class QtApplicationBase:
                     background-color: #2a82da;
                     border: 1px solid white;
                 }}
-            ''')
+                QTreeView {{
+                    background-color: #232323;
+                    color: #f0f0f0;
+                    alternate-background-color: #2d2d2d;
+                    selection-background-color: #2a82da;
+                    selection-color: #ffffff;
+                    gridline-color: #444a5a;
+                    border: 1px solid #222;
+                }}
+                QTreeView::branch:has-children:hover {{
+                    background: #2a82da;
+                    border-radius: 4px;
+                }}
+                QTreeView::branch:has-children:!has-siblings:adjoins-item:hover {{
+                    background: #2a82da;
+                    border-radius: 4px;
+                }}
+                QTreeView::branch:open:hover, QTreeView::branch:closed:hover {{
+                    background: #2a82da;
+                    border-radius: 4px;
+                }}
+                QTreeView::branch:open {{
+                    background: transparent;
+                }}
+                QTreeView::branch:closed {{
+                    background: transparent;
+                }}
+                QTreeView::branch:closed:has-children {{
+                    border-image: none;
+                    image: url(:/icons/branch-closed.svg);
+                }}
+                QTreeView::branch:open:has-children {{
+                    border-image: none;
+                    image: url(:/icons/branch-open.svg);
+                }}
+                QHeaderView::section {{
+                    background-color: #232323;
+                    color: #f0f0f0;
+                    border: 1px solid #444a5a;
+                    padding: 4px;
+                }}
+                QTreeView::item:selected {{
+                    background: #2a82da;
+                    color: #fff;
+                }}
+                QTreeView::item:hover {{
+                    background: #444a5a;
+                    color: #fff;
+                }}
+                QScrollBar:vertical {{
+                    background: #232323;
+                    width: 12px;
+                    margin: 0px;
+                }}
+                QScrollBar::handle:vertical {{
+                    background: #444a5a;
+                    min-height: 20px;
+                    border-radius: 6px;
+                }}
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                    background: none;
+                    border: none;
+                }}
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                    background: none;
+                }}
+                QScrollBar:horizontal {{
+                    background: #232323;
+                    height: 12px;
+                    margin: 0px;
+                }}
+                QScrollBar::handle:horizontal {{
+                    background: #444a5a;
+                    min-width: 20px;
+                    border-radius: 6px;
+                }}
+                QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+                    background: none;
+                    border: none;
+                }}
+                QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+                    background: none;
+                }}
+                QDialogButtonBox QPushButton {{
+                    background-color: #444a5a;
+                    color: #fff;
+                    border: 1px solid #2a82da;
+                    border-radius: 4px;
+                    padding: 4px 12px;
+                }}
+                QDialogButtonBox QPushButton:hover {{
+                    background-color: #2a82da;
+                    color: #fff;
+                }}
+                QDialogButtonBox QPushButton:pressed {{
+                    background-color: #1a5a9a;
+                }}
+            ''')  # noqa: E501
         else:
             app.setPalette(app.style().standardPalette())
             app.setStyleSheet('')
@@ -309,7 +437,7 @@ class QtApplicationBase:
 
     @log_func_call
     def create_qt_inst(self, app_args: list[str] = []):
-        return QApplication(list(app_args))
+        return ExcHandlingQApp(list(app_args))
 
     @log_func_call
     def create_first_window(self, *args, **kwargs) -> QtWindowWrapper:
