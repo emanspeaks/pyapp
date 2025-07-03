@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QMainWindow, QWidget, QApplication, QDialog
 from PySide2.QtGui import QPalette, QColor
+from PySide2.QtCore import qVersion
 
 from ..logging import get_logger, log_func_call
 from ..app import PyApp
@@ -150,7 +151,8 @@ class QtWindowWrapper(QtDialogWrapper):
                  *args, **kwargs):
         QtDialogWrapper.__init__(self, basetitle, controller)
         ViewConcept.__init__(self, controller)
-        qtroot: QMainWindow = self.qtroot
+        self.qtroot: QMainWindow
+        qtroot = self.qtroot
         basewidget = self.create_basewidget()
         self.basewidget = basewidget
         qtroot.setCentralWidget(basewidget.qtroot)
@@ -245,6 +247,7 @@ class QtApplicationBase:
         import_qrc()
 
         self.qtroot = self.create_qt_inst(app_args)
+        PyApp.set('Qt_version', qVersion())
 
         # set_high_dpi_support(log=log)
         self.create_first_window(*firstwin_args, **firstwin_kwargs)
