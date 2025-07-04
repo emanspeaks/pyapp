@@ -5,7 +5,8 @@ from ..logging import get_logger, log_func_call
 from ..app import PyApp
 
 from .notify import ExcHandlingQApp
-from .qrc import compile_qrc, import_qrc
+from .icons.qrc import compile_qrc, import_qrc
+from .icons.qiconfont import init_iconfonts
 from .themes import ThemeMap
 from .themes import STATUS_LABEL  # noqa: F401
 
@@ -248,6 +249,8 @@ class QtApplicationBase:
 
         self.qtroot = self.create_qt_inst(app_args)
         PyApp.set('Qt_version', qVersion())
+
+        init_iconfonts()
 
         # set_high_dpi_support(log=log)
         self.create_first_window(*firstwin_args, **firstwin_kwargs)
