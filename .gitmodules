@@ -1,0 +1,3 @@
+[submodule "pyapp/qt_gui/icons/vscode-codicons"]
+	path = pyapp/qt_gui/icons/vscode-codicons
+	url = https://github.com/microsoft/vscode-codicons.git

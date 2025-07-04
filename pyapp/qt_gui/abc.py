@@ -1,14 +1,13 @@
 from PySide2.QtWidgets import QMainWindow, QWidget, QApplication, QDialog
-from PySide2.QtGui import QPalette, QColor
 from PySide2.QtCore import qVersion
 
 from ..logging import get_logger, log_func_call
 from ..app import PyApp
 
-from .exc import ExcHandlingQApp
+from .notify import ExcHandlingQApp
 from .qrc import compile_qrc, import_qrc
-
-STATUS_LABEL = 'status_label'  # used in stylesheet for status label
+from .themes import ThemeMap
+from .themes import STATUS_LABEL  # noqa: F401
 
 
 # mixins
@@ -233,6 +232,7 @@ class QtApplicationBase:
         log.debug('initializing application')
         self.gui_initialized = False
         self.qtroot: QApplication = None
+        self.themes: ThemeMap = None
         self.windows: list[QtWindowWrapper] = list()
         if self.INIT_GUI_IN_CONSTRUCTOR:
             self.init_gui(app_args, *firstwin_args, **firstwin_kwargs)
@@ -270,7 +270,7 @@ class QtApplicationBase:
 
     @log_func_call
     def init_themes(self):
-        pass
+        self.themes = ThemeMap(self.qtroot)
 
     @log_func_call
     def set_theme(self, t: str = None):
@@ -282,161 +282,11 @@ class QtApplicationBase:
         if tnew:
             PyApp.set('local.theme', t)
 
-        app = self.qtroot
-        if t.lower() == "dark":
-            palette = QPalette()
-            palette.setColor(QPalette.Window, QColor(53, 53, 53))
-            palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
-            palette.setColor(QPalette.Base, QColor(35, 35, 35))
-            palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-            palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 255))
-            palette.setColor(QPalette.ToolTipText, QColor(255, 255, 255))
-            palette.setColor(QPalette.Text, QColor(255, 255, 255))
-            palette.setColor(QPalette.Button, QColor(53, 53, 53))
-            palette.setColor(QPalette.ButtonText, QColor(255, 255, 255))
-            palette.setColor(QPalette.BrightText, QColor(255, 0, 0))
-            palette.setColor(QPalette.Link, QColor(42, 130, 218))
-            palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-            palette.setColor(QPalette.HighlightedText, QColor(0, 0, 0))
-            app.setPalette(palette)
-            # Enhanced dark style for toolbar button hover
-            app.setStyleSheet(f'''
-                QToolBar QToolButton {{
-                    background: transparent;
-                    color: #fff;
-                    border: none;
-                    padding: 4px 8px;
-                }}
-                QToolBar QToolButton:hover {{
-                    background: #444a5a;
-                    color: #fff;
-                    border-radius: 4px;
-                }}
-                QToolBar QToolButton:pressed {{
-                    background: #2a82da;
-                    color: #fff;
-                }}
-                QLabel#{STATUS_LABEL} {{
-                    padding: 2px 8px;
-                    background: #444a5a;
-                    color: #fff;
-                    border-radius: 4px;
-                }}
-                QLabel#{STATUS_LABEL}:hover {{
-                    background: #2a82da;
-                    color: #fff;
-                }}
-                QToolTip {{
-                    color: #ffffff;
-                    background-color: #2a82da;
-                    border: 1px solid white;
-                }}
-                QTreeView {{
-                    background-color: #232323;
-                    color: #f0f0f0;
-                    alternate-background-color: #2d2d2d;
-                    selection-background-color: #2a82da;
-                    selection-color: #ffffff;
-                    gridline-color: #444a5a;
-                    border: 1px solid #222;
-                }}
-                QTreeView::branch:has-children:hover {{
-                    background: #2a82da;
-                    border-radius: 4px;
-                }}
-                QTreeView::branch:has-children:!has-siblings:adjoins-item:hover {{
-                    background: #2a82da;
-                    border-radius: 4px;
-                }}
-                QTreeView::branch:open:hover, QTreeView::branch:closed:hover {{
-                    background: #2a82da;
-                    border-radius: 4px;
-                }}
-                QTreeView::branch:open {{
-                    background: transparent;
-                }}
-                QTreeView::branch:closed {{
-                    background: transparent;
-                }}
-                QTreeView::branch:closed:has-children {{
-                    border-image: none;
-                    image: url(:/icons/branch-closed.svg);
-                }}
-                QTreeView::branch:open:has-children {{
-                    border-image: none;
-                    image: url(:/icons/branch-open.svg);
-                }}
-                QHeaderView::section {{
-                    background-color: #232323;
-                    color: #f0f0f0;
-                    border: 1px solid #444a5a;
-                    padding: 4px;
-                }}
-                QTreeView::item:selected {{
-                    background: #2a82da;
-                    color: #fff;
-                }}
-                QTreeView::item:hover {{
-                    background: #444a5a;
-                    color: #fff;
-                }}
-                QScrollBar:vertical {{
-                    background: #232323;
-                    width: 12px;
-                    margin: 0px;
-                }}
-                QScrollBar::handle:vertical {{
-                    background: #444a5a;
-                    min-height: 20px;
-                    border-radius: 6px;
-                }}
-                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-                    background: none;
-                    border: none;
-                }}
-                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
-                    background: none;
-                }}
-                QScrollBar:horizontal {{
-                    background: #232323;
-                    height: 12px;
-                    margin: 0px;
-                }}
-                QScrollBar::handle:horizontal {{
-                    background: #444a5a;
-                    min-width: 20px;
-                    border-radius: 6px;
-                }}
-                QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
-                    background: none;
-                    border: none;
-                }}
-                QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
-                    background: none;
-                }}
-                QDialogButtonBox QPushButton {{
-                    background-color: #444a5a;
-                    color: #fff;
-                    border: 1px solid #2a82da;
-                    border-radius: 4px;
-                    padding: 4px 12px;
-                }}
-                QDialogButtonBox QPushButton:hover {{
-                    background-color: #2a82da;
-                    color: #fff;
-                }}
-                QDialogButtonBox QPushButton:pressed {{
-                    background-color: #1a5a9a;
-                }}
-            ''')  # noqa: E501
-        else:
-            app.setPalette(app.style().standardPalette())
-            app.setStyleSheet('')
+        self.themes.apply_theme(t)
 
     @log_func_call
     def get_theme(self):
-        pass
-        # return self.themes.get_current_theme()
+        return self.themes.get_current_theme()
 
     @log_func_call
     def create_qt_inst(self, app_args: list[str] = []):

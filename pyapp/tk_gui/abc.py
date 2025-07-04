@@ -221,6 +221,7 @@ class TkApplicationBase(TkAbstractWindowController):
         log.debug(f'setting theme to {t}')
         if tnew:
             PyApp.set('local.theme', t)
+
         self.themes.apply_theme(t)
 
     def get_theme(self):
