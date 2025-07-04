@@ -54,12 +54,14 @@ class QIconFont:
                                  "in charmap.")
         return chr(i)
 
-    def icon(self, *names, **kwargs):
+    # TODO this is only for now for testing, it should be an instance method
+    @classmethod
+    def icon(cls, *names, **kwargs):
         cache_key = f"{names}{kwargs}"
-        if cache_key not in self._ICON_CACHE:
+        if cache_key not in cls._ICON_CACHE:
             # TODO
             i = QIcon()
-            self._ICON_CACHE[cache_key] = i
+            cls._ICON_CACHE[cache_key] = i
             # TODO
 
-        return self._ICON_CACHE[cache_key]
+        return cls._ICON_CACHE[cache_key]
