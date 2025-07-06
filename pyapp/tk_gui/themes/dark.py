@@ -2,8 +2,10 @@
 # https://github.com/TkinterEP/ttkthemes/blob/master/ttkthemes/png/equilux/equilux.tcl  # noqa: E501
 
 from tkinter.ttk import Style
+from ...logging import log_func_call
 
 
+@log_func_call
 def dark_theme(s: Style):
     # fg = "#a6a6a6"
     fg = "#ffffff"

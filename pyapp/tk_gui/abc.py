@@ -8,7 +8,7 @@ from tkinter import (  # noqa: F401
 )
 
 from ..config.keys import LOCAL_CFG_KEY
-from ..logging import get_logger
+from ..logging import get_logger, log_func_call
 from ..utils.windows.funcs import set_high_dpi_support
 
 from ..app import PyApp
@@ -19,15 +19,19 @@ from .themes import ThemeMap
 # mixins
 
 class TtkWidgetMixin(TtkWidget):
+    @log_func_call
     def enable(self):
         self.configure(state='normal')
 
+    @log_func_call
     def disable(self, emit: bool = True):
         self.configure(state='disabled')
 
+    @log_func_call
     def get_enabled(self):
         return 'disabled' not in self.state()
 
+    @log_func_call
     def set_enabled(self, enabled: bool, emit: bool = True):
         if enabled:
             self.enable()
@@ -36,12 +40,14 @@ class TtkWidgetMixin(TtkWidget):
 
         return enabled
 
+    @log_func_call
     def temp_change_enabled(self, enabled: bool, emit: bool = True):
         "returns the enabled state prior to calling this function"
         current = self.get_enabled()
         self.set_enabled(enabled, emit)
         return current
 
+    @log_func_call
     def get_tkwindow(self):
         parent = self
         while not isinstance(parent, (Tk, TkToplevel)):
@@ -50,14 +56,17 @@ class TtkWidgetMixin(TtkWidget):
 
 
 class TkGetWindowMixin:
+    @log_func_call
     def get_window(self) -> 'TkAbstractWindowWrapper':
         raise NotImplementedError('Abstract method not implemented')
 
+    @log_func_call
     def get_window_tkroot(self):
         return self.get_window().tkroot
 
 
 class TkHasViewParent(TkGetWindowMixin):
+    @log_func_call
     def __init__(self, parent: TkGetWindowMixin):
         super().__init__()
         self.parent = parent
@@ -66,10 +75,12 @@ class TkHasViewParent(TkGetWindowMixin):
 # widgets
 
 class TkWidgetBase(TkHasViewParent):
+    @log_func_call
     def __init__(self, parent: 'TkWidgetBase'):
         super().__init__()
         self.parent = parent
 
+    @log_func_call
     def get_window(self):
         parent = self.parent
         if isinstance(parent, TkAbstractWindowWrapper):
@@ -78,12 +89,14 @@ class TkWidgetBase(TkHasViewParent):
 
 
 class TkWidgetWrapper(TkWidgetBase):
+    @log_func_call
     def __init__(self, parent):
         super().__init__(parent)
         self.tkroot: TtkWidget = None
 
 
 class TkWindowBaseWidgetWrapper(TkWidgetWrapper):
+    @log_func_call
     def __init__(self, parent: 'TkAbstractWindowWrapper'):
         super().__init__(parent)
 
@@ -91,6 +104,7 @@ class TkWindowBaseWidgetWrapper(TkWidgetWrapper):
 # views
 
 class ViewConcept:
+    @log_func_call
     def __init__(self, controller: 'ViewController'):
         super().__init__()
         self.controller = controller
@@ -99,6 +113,7 @@ class ViewConcept:
 # windows
 
 class TkAbstractWindowWrapper(TkGetWindowMixin, ViewConcept):
+    @log_func_call
     def __init__(self, basetitle: str, controller: 'TkChildWindowController',
                  *args, **kwargs):
         super().__init__(controller)
@@ -108,46 +123,56 @@ class TkAbstractWindowWrapper(TkGetWindowMixin, ViewConcept):
         self.basetitle = basetitle
         self.update_title()
 
+    @log_func_call
     def create_tkroot(self, *args, **kwargs) -> TkToplevel:
         raise NotImplementedError('Abstract method not implemented')
 
+    @log_func_call
     def get_window(self):
         return self
 
+    @log_func_call
     def get_tkbasewidget(self):
         return self.basewidget.tkroot
 
+    @log_func_call
     def update_title(self, subtitle: str = None):
         title = self.basetitle
         if subtitle:
             title += ' - ' + subtitle
         self.tkroot.title(title)
 
+    @log_func_call
     def get_dpi(self):
         return self.tkroot.winfo_fpixels('1i')
 
     @property
+    @log_func_call
     def hwnd(self):
         return self.tkroot.winfo_id()
 
 
 class TkChildWindowWrapper(TkAbstractWindowWrapper, TkHasViewParent):
+    @log_func_call
     def __init__(self, basetitle: str, controller: 'TkChildWindowController',
                  parent: TkAbstractWindowWrapper):
         TkHasViewParent.__init__(self, parent)
         TkAbstractWindowWrapper.__init__(self, basetitle, controller)
 
+    @log_func_call
     def create_tkroot(self) -> TkToplevel:
         return TkToplevel(self.parent.get_window_tkroot())
 
 
 class TkMainWindowWrapper(TkAbstractWindowWrapper):
+    @log_func_call
     def __init__(self, basetitle: str, controller: 'TkApplicationBase',
                  *args, **kwargs):
         log = get_logger()
         log.debug('init main window')
         super().__init__(basetitle, controller, *args, **kwargs)
 
+    @log_func_call
     def create_tkroot(self, *args, **kwargs) -> TkToplevel:
         ctrl: TkApplicationBase = self.controller
         return ctrl.create_tk_inst(*args, **kwargs)
@@ -160,15 +185,18 @@ class ViewController:
 
 
 class TkAbstractWindowController(TkGetWindowMixin, ViewController):
+    @log_func_call
     def __init__(self):
         super().__init__()
         self.window: TkAbstractWindowWrapper = None
 
+    @log_func_call
     def get_window(self):
         return self.window
 
 
 class TkChildWindowController(TkAbstractWindowController):
+    @log_func_call
     def __init__(self, parentwindow: TkAbstractWindowWrapper):
         super().__init__()
         self.window: TkChildWindowWrapper = None
@@ -178,6 +206,7 @@ class TkChildWindowController(TkAbstractWindowController):
 class TkApplicationBase(TkAbstractWindowController):
     INIT_GUI_IN_CONSTRUCTOR: bool = True
 
+    @log_func_call
     def __init__(self, use_local: bool = False, *args, **kwargs):
         log = get_logger()
         log.debug('initializing application')
@@ -189,6 +218,7 @@ class TkApplicationBase(TkAbstractWindowController):
         if self.INIT_GUI_IN_CONSTRUCTOR:
             self.init_gui(*args, **kwargs)
 
+    @log_func_call
     def init_gui(self, *args, **kwargs):
         log = get_logger()
         log.debug('starting app main')
@@ -203,6 +233,7 @@ class TkApplicationBase(TkAbstractWindowController):
 
         self.gui_initialized = True
 
+    @log_func_call
     def main(self, *args, **kwargs):
         log = get_logger()
         if not self.gui_initialized:
@@ -211,9 +242,11 @@ class TkApplicationBase(TkAbstractWindowController):
         log.debug('starting Tk main loop')
         self.get_window_tkroot().mainloop()
 
+    @log_func_call
     def init_themes(self):
         self.themes = ThemeMap()
 
+    @log_func_call
     def set_theme(self, t: str = None):
         log = get_logger()
 
@@ -225,12 +258,15 @@ class TkApplicationBase(TkAbstractWindowController):
 
         self.themes.apply_theme(t)
 
+    @log_func_call
     def get_theme(self):
         return self.themes.get_current_theme()
 
+    @log_func_call
     def create_tk_inst(self, *args, **kwargs):
         return Tk()
 
+    @log_func_call
     def create_main_window(self, *args, **kwargs) -> TkMainWindowWrapper:
         "sets self.window to an instance of the concrete main window object"
         raise NotImplementedError('Abstract method not implemented')

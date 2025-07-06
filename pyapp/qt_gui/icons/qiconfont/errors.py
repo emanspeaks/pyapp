@@ -1,2 +1,2 @@
-class FontError(Exception):
+class QIconFontError(Exception):
     """Exception for font errors."""

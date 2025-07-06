@@ -2,7 +2,10 @@ from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QPalette, QColor
 from qdarkstyle import load_stylesheet
 
+from ...logging import log_func_call
 
+
+@log_func_call
 def dark_theme(app: QApplication):
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(53, 53, 53))

@@ -1,5 +1,6 @@
 from tkinter.ttk import Style
 
+from ...logging import log_func_call
 from .dark import dark_theme
 
 _sty = None
@@ -21,6 +22,7 @@ class ThemeMap:
     _custom_themes = set()
 
     @staticmethod
+    @log_func_call
     def get_global_style():
         global _sty
         if not _sty:
@@ -28,11 +30,13 @@ class ThemeMap:
 
         return _sty
 
+    @log_func_call
     def __init__(self):
         if not self._custom_themes:
             self.init_themes()
 
     @classmethod
+    @log_func_call
     def create_theme(cls, name: str, base: str = 'vista'):
         themes = cls._custom_themes
         if name not in themes:
@@ -42,6 +46,7 @@ class ThemeMap:
             themes.add(name)
 
     @classmethod
+    @log_func_call
     def init_themes(cls):
         # create Light alias for vista
         cls.create_theme('Light', 'alt')
@@ -51,11 +56,13 @@ class ThemeMap:
         dark_theme(cls.get_global_style())
 
     @classmethod
+    @log_func_call
     def apply_theme(cls, name: str):
         cls.get_global_style().theme_use(name)
         cls.apply_custom_button_themes()
 
     @classmethod
+    @log_func_call
     def apply_custom_button_themes(cls):
         s = cls.get_global_style()
 
@@ -89,9 +96,11 @@ class ThemeMap:
                     foreground='black')
 
     @classmethod
+    @log_func_call
     def get_current_theme(cls):
         return cls.get_global_style().theme_use(None)
 
     @classmethod
+    @log_func_call
     def list_themes(cls):
         return cls.get_global_style().theme_names()
