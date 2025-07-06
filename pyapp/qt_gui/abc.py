@@ -6,7 +6,7 @@ from ..app import PyApp
 from ..config.keys import LOCAL_CFG_KEY
 
 from .notify import ExcHandlingQApp
-from .icons.qrc import compile_qrc, import_qrc
+from .qrc import compile_qrc, import_qrc
 from .icons.qiconfont import init_iconfonts
 from .themes import ThemeMap
 from .themes import STATUS_LABEL  # noqa: F401
@@ -179,15 +179,6 @@ class QtChildWindowWrapper(QtHasViewParent, QtWindowWrapper):
         QtWindowWrapper.__init__(self, basetitle, controller)
 
 
-# class QtMainWindowWrapper(QtAbstractWindowWrapper):
-#     def __init__(self, basetitle: str, controller: 'QtApplicationBase',
-#                  *args, **kwargs):
-#         log = get_logger()
-#         log.debug('init main window')
-#         super().__init__(basetitle, controller)
-#         # self.qtroot = controller.create_qt_inst(*args, **kwargs)
-
-
 # controllers
 
 class ViewController:
@@ -244,6 +235,10 @@ class QtApplicationBase:
         log = get_logger()
         log.debug('starting app main')
 
+        # NOTE: this is not really used anymore since I am using qdarkstyle,
+        # but wanted to keep the code for reference since I may have a need
+        # later on to use Qt resource files.
+        #
         # Ensure Qt resources are registered before any widgets are created
         compile_qrc()
         import_qrc()
