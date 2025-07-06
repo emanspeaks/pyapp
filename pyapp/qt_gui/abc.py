@@ -3,6 +3,7 @@ from PySide2.QtCore import qVersion
 
 from ..logging import get_logger, log_func_call
 from ..app import PyApp
+from ..config.keys import LOCAL_CFG_KEY
 
 from .notify import ExcHandlingQApp
 from .icons.qrc import compile_qrc, import_qrc
@@ -280,10 +281,10 @@ class QtApplicationBase:
         log = get_logger()
 
         tnew = t
-        t = t or PyApp['local.theme']
+        t = t or PyApp[f'{LOCAL_CFG_KEY}.theme']
         log.debug(f'setting theme to {t}')
         if tnew:
-            PyApp.set('local.theme', t)
+            PyApp.set(f'{LOCAL_CFG_KEY}.theme', t)
 
         self.themes.apply_theme(t)
 
