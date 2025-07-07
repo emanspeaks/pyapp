@@ -3,7 +3,7 @@ from PySide2.QtWidgets import (
     QLabel,
 )
 from PySide2.QtCore import qVersion, Qt
-from PySide2.QtGui import QPixmap
+from PySide2.QtGui import QPixmap, QMouseEvent
 
 from ..logging import get_logger, log_func_call, DEBUGLOW2, DEBUG
 from ..app import PyApp
@@ -14,6 +14,15 @@ from .qrc import compile_qrc, import_qrc
 from .icons.qiconfont import init_iconfonts
 from .themes import ThemeMap
 from .themes import STATUS_LABEL  # noqa: F401
+from .loadstatus import load_status_step, splash_message, LOAD_STEP_REGISTRY
+
+
+@log_func_call(DEBUGLOW2, trace_only=True)
+def get_qt_app() -> 'QtApplicationBase':
+    global QT_APP_INST
+    if not QT_APP_INST:
+        raise RuntimeError("Qt application instance is not initialized.")
+    return QT_APP_INST
 
 
 # mixins
@@ -131,6 +140,13 @@ class QtWindowWrapperBase(QtGetWindowMixin):
     def hwnd(self):
         return self.qtroot.winId()
 
+    @log_func_call
+    def bring_to_front(self):
+        qtroot = self.qtroot
+        qtroot.raise_()
+        qtroot.activateWindow()
+        qtroot.showNormal()
+
 
 class QtSplashScreen(QtWindowWrapperBase):
     @log_func_call(DEBUGLOW2, trace_only=True)
@@ -139,34 +155,55 @@ class QtSplashScreen(QtWindowWrapperBase):
                       *args, **kwargs):
         return QSplashScreen(pixmap or QPixmap(), flags, *args, **kwargs)
 
+    def mousePressEvent(self, event: QMouseEvent):
+        # Prevent the splash from being closed by mouse click
+        pass
+
     @log_func_call(DEBUG)
-    def __init__(self, pixmap: QPixmap = None, *args, **kwargs):
+    def __init__(self, pixmap: QPixmap = None, *args,
+                 text: str = "Loading...", **kwargs):
         QtWindowWrapperBase.__init__(self, pixmap or QPixmap(),
                                      Qt.WindowStaysOnTopHint)
         self.qtroot: QSplashScreen
         qtroot = self.qtroot
+        qtroot.mousePressEvent = self.mousePressEvent
 
         pb = QProgressBar(qtroot)
         pb.setGeometry(20, 220, 360, 20)
-        pb.setRange(0, 100)
+        pb.setRange(0, len(LOAD_STEP_REGISTRY) or 1)
         pb.setValue(0)
         self.progress = pb
 
         lbl = QLabel(qtroot)
         lbl.setGeometry(20, 190, 360, 20)
+        lbl.setAlignment(Qt.AlignCenter)
+        lbl.setText(text)
         self.label = lbl
 
-    @log_func_call
-    def set_progress(self, *, value: int = None, message: str = None):
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def set_progress(self, *, value: int = None, message: str = None,
+                     process_events: bool = True):
+        progress = self.progress
+        mymax = progress.maximum()
+        refresh = mymax // 200 or 1
+        process_events = process_events and ((message and value is None)
+                                             or (value
+                                                 and value % refresh == 0)
+                                             or value == mymax
+                                             or value == 0
+                                             )
+
         if value is not None:
-            self.progress.setValue(value)
+            progress.setValue(value)
 
         if message:
             self.label.setText(message)
-            self.qtroot.showMessage(message, Qt.AlignBottom | Qt.AlignHCenter,
-                                    Qt.white)
+            # self.qtroot.showMessage(message,
+            #                         Qt.AlignBottom | Qt.AlignHCenter,
+            #                         Qt.white)
 
-        QApplication.processEvents()
+        if process_events:
+            QApplication.processEvents()
 
 
 class QtDialogWrapper(QtWindowWrapperBase, ViewConcept):
@@ -274,23 +311,35 @@ class QtApplicationBase:
     def __init__(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
         log = get_logger()
         log.debug('initializing application')
+        global QT_APP_INST
+        if QT_APP_INST is not None:
+            raise RuntimeError(
+                "A Qt application instance already exists for this Python "
+                "process. Only one instance is allowed per Python process."
+            )
+        QT_APP_INST = self
         self.gui_initialized = False
+
         self.qtroot: QApplication = None
         self.themes: ThemeMap = None
         self.windows: list[QtWindowWrapper] = list()
         self.splash: QtSplashScreen = None
+        self.loading_step_registry = set()
+        self.completed_load_steps = set()
         if self.INIT_GUI_IN_CONSTRUCTOR:
             self.init_gui(app_args, *firstwin_args, **firstwin_kwargs)
 
     @property
-    def app(self):
+    def qtapp(self):
         return self.qtroot
 
     @log_func_call
-    def create_splash(self, message: str = "Loading...") -> QtSplashScreen:
-        pass
+    def create_splash(self, *args, **kwargs) -> QtSplashScreen:
+        return QtSplashScreen(QPixmap(), *args, **kwargs)
 
     @log_func_call
+    @load_status_step("GUI initialized", show_step_done=True,
+                      show_step_start=False)
     def init_gui(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
         log = get_logger()
         log.debug('starting app main')
@@ -327,6 +376,7 @@ class QtApplicationBase:
             self.init_gui(*args, **kwargs)
 
         log.debug('starting Qt main loop')
+        splash_message("Main loop starting")
         self.qtroot.exec_()
 
     @log_func_call
@@ -364,3 +414,6 @@ class QtApplicationBase:
             qtsplash: QSplashScreen = self.splash.get_window_qtroot()
             qtsplash.finish(delegate)
             self.splash = None
+
+
+QT_APP_INST: QtApplicationBase | None = None
