@@ -1,7 +1,11 @@
-from PySide2.QtWidgets import QMainWindow, QWidget, QApplication, QDialog
-from PySide2.QtCore import qVersion
+from PySide2.QtWidgets import (
+    QMainWindow, QWidget, QApplication, QDialog, QSplashScreen, QProgressBar,
+    QLabel,
+)
+from PySide2.QtCore import qVersion, Qt
+from PySide2.QtGui import QPixmap
 
-from ..logging import get_logger, log_func_call, DEBUGLOW2
+from ..logging import get_logger, log_func_call, DEBUGLOW2, DEBUG
 from ..app import PyApp
 from ..config.keys import LOCAL_CFG_KEY
 
@@ -50,7 +54,7 @@ class QtWidgetMixin(QWidget):
 
 class QtGetWindowMixin:
     @log_func_call
-    def get_window(self) -> 'QtWindowWrapper':
+    def get_window(self) -> 'QtWindowWrapperBase':
         raise NotImplementedError('Abstract method not implemented')
 
     @log_func_call(DEBUGLOW2, trace_only=True)
@@ -104,15 +108,74 @@ class ViewConcept:
 
 # windows
 
-class QtDialogWrapper(QtGetWindowMixin, ViewConcept):
+class QtWindowWrapperBase(QtGetWindowMixin):
+    @log_func_call
+    def show(self):
+        self.qtroot.show()
+
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def get_window(self):
+        return self
+
+    @log_func_call
+    def __init__(self, *args, **kwargs):
+        QtGetWindowMixin.__init__(self)
+        qtroot = self.create_qtroot(*args, **kwargs)
+        self.qtroot = qtroot
+
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def create_qtroot(self, *args, **kwargs) -> QWidget:
+        raise NotImplementedError('Abstract method not implemented')
+
+    @property
+    def hwnd(self):
+        return self.qtroot.winId()
+
+
+class QtSplashScreen(QtWindowWrapperBase):
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def create_qtroot(self, pixmap: QPixmap = None,
+                      flags: Qt.WindowFlags = Qt.WindowStaysOnTopHint,
+                      *args, **kwargs):
+        return QSplashScreen(pixmap or QPixmap(), flags, *args, **kwargs)
+
+    @log_func_call(DEBUG)
+    def __init__(self, pixmap: QPixmap = None, *args, **kwargs):
+        QtWindowWrapperBase.__init__(self, pixmap or QPixmap(),
+                                     Qt.WindowStaysOnTopHint)
+        self.qtroot: QSplashScreen
+        qtroot = self.qtroot
+
+        pb = QProgressBar(qtroot)
+        pb.setGeometry(20, 220, 360, 20)
+        pb.setRange(0, 100)
+        pb.setValue(0)
+        self.progress = pb
+
+        lbl = QLabel(qtroot)
+        lbl.setGeometry(20, 190, 360, 20)
+        self.label = lbl
+
+    @log_func_call
+    def set_progress(self, *, value: int = None, message: str = None):
+        if value is not None:
+            self.progress.setValue(value)
+
+        if message:
+            self.label.setText(message)
+            self.qtroot.showMessage(message, Qt.AlignBottom | Qt.AlignHCenter,
+                                    Qt.white)
+
+        QApplication.processEvents()
+
+
+class QtDialogWrapper(QtWindowWrapperBase, ViewConcept):
     @log_func_call
     def __init__(self, basetitle: str, controller: 'QtChildWindowController',
                  *args, **kwargs):
-        QtGetWindowMixin.__init__(self)
+        QtWindowWrapperBase.__init__(self, *args, **kwargs)
         ViewConcept.__init__(self, controller)
-
-        qtroot = self.create_qtroot(*args, **kwargs)
-        self.qtroot = qtroot
+        self.qtroot: QDialog
 
         self.basetitle = basetitle
         self.update_title()
@@ -120,10 +183,6 @@ class QtDialogWrapper(QtGetWindowMixin, ViewConcept):
     @log_func_call(DEBUGLOW2, trace_only=True)
     def create_qtroot(self, *args, **kwargs):
         return QDialog(*args, **kwargs)
-
-    @log_func_call(DEBUGLOW2, trace_only=True)
-    def get_window(self):
-        return self
 
     @log_func_call
     def update_title(self, subtitle: str = None):
@@ -137,20 +196,12 @@ class QtDialogWrapper(QtGetWindowMixin, ViewConcept):
     def get_dpi(self):
         return self.qtroot.devicePixelRatio()
 
-    @property
-    def hwnd(self):
-        return self.qtroot.winId()
-
-    @log_func_call
-    def show(self):
-        self.qtroot.show()
-
 
 class QtWindowWrapper(QtDialogWrapper):
     @log_func_call
     def __init__(self, basetitle: str, controller: 'QtWindowController',
                  *args, **kwargs):
-        QtDialogWrapper.__init__(self, basetitle, controller)
+        QtDialogWrapper.__init__(self, basetitle, controller, *args, **kwargs)
         ViewConcept.__init__(self, controller)
         self.qtroot: QMainWindow
         qtroot = self.qtroot
@@ -227,8 +278,17 @@ class QtApplicationBase:
         self.qtroot: QApplication = None
         self.themes: ThemeMap = None
         self.windows: list[QtWindowWrapper] = list()
+        self.splash: QtSplashScreen = None
         if self.INIT_GUI_IN_CONSTRUCTOR:
             self.init_gui(app_args, *firstwin_args, **firstwin_kwargs)
+
+    @property
+    def app(self):
+        return self.qtroot
+
+    @log_func_call
+    def create_splash(self, message: str = "Loading...") -> QtSplashScreen:
+        pass
 
     @log_func_call
     def init_gui(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
@@ -243,19 +303,21 @@ class QtApplicationBase:
         compile_qrc()
         import_qrc()
 
-        self.qtroot = self.create_qt_inst(app_args)
+        app = self.create_qt_inst(app_args)
+        self.qtroot = app
         PyApp.set('Qt_version', qVersion())
-
-        init_iconfonts()
-
-        # set_high_dpi_support(log=log)
-        self.create_first_window(*firstwin_args, **firstwin_kwargs)
-
-        # we need Qt to be initialized before we can init or set themes,
-        # so we wait until after the main window is created.
         self.init_themes()
         self.set_theme()
 
+        splash = self.create_splash()
+        if splash:
+            splash.show()
+            app.processEvents()
+            self.splash = splash
+
+        init_iconfonts()
+        # set_high_dpi_support(log=log)
+        self.create_first_window(*firstwin_args, **firstwin_kwargs)
         self.gui_initialized = True
 
     @log_func_call
@@ -295,3 +357,10 @@ class QtApplicationBase:
     def create_first_window(self, *args, **kwargs) -> QtWindowWrapper:
         "create and show the first window after app launch"
         raise NotImplementedError('Abstract method not implemented')
+
+    @log_func_call
+    def close_splash(self, delegate: QWidget):
+        if self.splash:
+            qtsplash: QSplashScreen = self.splash.get_window_qtroot()
+            qtsplash.finish(delegate)
+            self.splash = None
