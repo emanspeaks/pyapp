@@ -1,4 +1,5 @@
 from ....app import PyApp
+from ....logging import log_func_call
 from ...abc import QtDialogController, QtWindowController
 from .view import ConfigTreeView
 

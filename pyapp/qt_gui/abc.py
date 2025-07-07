@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QMainWindow, QWidget, QApplication, QDialog
 from PySide2.QtCore import qVersion
 
-from ..logging import get_logger, log_func_call
+from ..logging import get_logger, log_func_call, DEBUGLOW2
 from ..app import PyApp
 from ..config.keys import LOCAL_CFG_KEY
 
@@ -39,7 +39,7 @@ class QtWidgetMixin(QWidget):
         self.set_enabled(enabled, emit)
         return current
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_qtwindow(self):
         parent = self
         while not isinstance(parent, (QMainWindow, QApplication,
@@ -53,13 +53,13 @@ class QtGetWindowMixin:
     def get_window(self) -> 'QtWindowWrapper':
         raise NotImplementedError('Abstract method not implemented')
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_window_qtroot(self):
         return self.get_window().qtroot
 
 
 class QtHasViewParent(QtGetWindowMixin):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parent: QtGetWindowMixin):
         QtGetWindowMixin.__init__(self)
         self.parent = parent
@@ -68,12 +68,12 @@ class QtHasViewParent(QtGetWindowMixin):
 # widgets
 
 class QtWidgetBase(QtHasViewParent):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parent: 'QtWidgetBase'):
         QtHasViewParent.__init__(self, parent)
         # self.parent = parent
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_window(self):
         parent = self.parent
         if isinstance(parent, QtWindowWrapper):
@@ -82,14 +82,14 @@ class QtWidgetBase(QtHasViewParent):
 
 
 class QtWidgetWrapper(QtWidgetBase):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parent: QtWidgetBase):
         QtWidgetBase.__init__(self, parent)
         self.qtroot: QWidget = None
 
 
 class QtWindowBaseWidgetWrapper(QtWidgetWrapper):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parent: 'QtWindowWrapper'):
         QtWidgetWrapper.__init__(self, parent)
 
@@ -97,7 +97,7 @@ class QtWindowBaseWidgetWrapper(QtWidgetWrapper):
 # views
 
 class ViewConcept:
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, controller: 'ViewController'):
         self.controller = controller
 
@@ -117,11 +117,11 @@ class QtDialogWrapper(QtGetWindowMixin, ViewConcept):
         self.basetitle = basetitle
         self.update_title()
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def create_qtroot(self, *args, **kwargs):
         return QDialog(*args, **kwargs)
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_window(self):
         return self
 
@@ -158,7 +158,7 @@ class QtWindowWrapper(QtDialogWrapper):
         self.basewidget = basewidget
         qtroot.setCentralWidget(basewidget.qtroot)
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def create_qtroot(self, *args, **kwargs) -> QMainWindow:
         return QMainWindow(*args, **kwargs)
 
@@ -166,13 +166,13 @@ class QtWindowWrapper(QtDialogWrapper):
     def create_basewidget(self) -> QtWindowBaseWidgetWrapper:
         raise NotImplementedError('Abstract method not implemented')
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_qtbasewidget(self):
         return self.basewidget.qtroot
 
 
 class QtChildWindowWrapper(QtHasViewParent, QtWindowWrapper):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, basetitle: str, controller: 'QtChildWindowController',
                  parent: QtWindowWrapper):
         QtHasViewParent.__init__(self, parent)
@@ -186,7 +186,7 @@ class ViewController:
 
 
 class QtWindowController(ViewController, QtGetWindowMixin):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self):
         ViewController.__init__(self)
         QtGetWindowMixin.__init__(self)
@@ -202,7 +202,7 @@ class QtWindowController(ViewController, QtGetWindowMixin):
 
 
 class QtDialogController(QtWindowController):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parentwindow: QtWindowWrapper):
         QtWindowController.__init__(self)
         self.window: QtDialogWrapper = None
@@ -210,7 +210,7 @@ class QtDialogController(QtWindowController):
 
 
 class QtChildWindowController(QtDialogController):
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, parentwindow: QtWindowWrapper):
         QtDialogController.__init__(self, parentwindow)
         self.window: QtChildWindowWrapper = None
@@ -219,7 +219,7 @@ class QtChildWindowController(QtDialogController):
 class QtApplicationBase:
     INIT_GUI_IN_CONSTRUCTOR: bool = True
 
-    @log_func_call
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def __init__(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
         log = get_logger()
         log.debug('initializing application')
