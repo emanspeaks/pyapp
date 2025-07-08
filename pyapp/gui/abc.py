@@ -1,9 +1,9 @@
 from PySide2.QtWidgets import (
     QMainWindow, QWidget, QApplication, QDialog, QSplashScreen, QProgressBar,
-    QLabel,
+    QLabel
 )
-from PySide2.QtCore import qVersion, Qt
-from PySide2.QtGui import QPixmap, QMouseEvent
+from PySide2.QtCore import qVersion, Qt, QRect
+from PySide2.QtGui import QPixmap, QMouseEvent, QPalette
 
 from ..logging import get_logger, log_func_call, DEBUGLOW2, DEBUG
 from ..app import PyApp
@@ -11,18 +11,24 @@ from ..config.keys import LOCAL_CFG_KEY
 
 from .notify import ExcHandlingQApp
 from .qrc import compile_qrc, import_qrc
-from .icons.qiconfont import init_iconfonts
 from .themes import ThemeMap
 from .themes import STATUS_LABEL  # noqa: F401
 from .loadstatus import load_status_step, splash_message, LOAD_STEP_REGISTRY
 
 
 @log_func_call(DEBUGLOW2, trace_only=True)
-def get_qt_app() -> 'QtApplicationBase':
+def get_gui_app() -> 'QtApplicationBase':
     global QT_APP_INST
     if not QT_APP_INST:
         raise RuntimeError("Qt application instance is not initialized.")
     return QT_APP_INST
+
+
+@log_func_call(DEBUGLOW2, trace_only=True)
+def get_qt_app() -> QApplication:
+    app = get_gui_app()
+    if app:
+        return app.qtroot
 
 
 # mixins
@@ -168,16 +174,55 @@ class QtSplashScreen(QtWindowWrapperBase):
         qtroot = self.qtroot
         qtroot.mousePressEvent = self.mousePressEvent
 
+        rect = pixmap.rect() if pixmap else QRect(0, 0, 400, 400)
+
+        gridsize = 20
+
         pb = QProgressBar(qtroot)
-        pb.setGeometry(20, 220, 360, 20)
+        pb.setGeometry(gridsize, round((rect.height() + gridsize)*0.75),
+                       rect.width() - 2*gridsize, gridsize)
         pb.setRange(0, len(LOAD_STEP_REGISTRY) or 1)
         pb.setValue(0)
+        pb.setStyleSheet('''
+            QProgressBar {
+                background-color: #19232D;
+                border: 1px solid #455364;
+                color: #DFE1E2;
+                border-radius: 4px;
+                text-align: center;
+            }
+
+            QProgressBar:disabled {
+                background-color: #19232D;
+                border: 1px solid #455364;
+                color: #788D9C;
+                border-radius: 4px;
+                text-align: center;
+            }
+
+            QProgressBar::chunk {
+                background-color: #346792;
+                color: #19232D;
+                border-radius: 4px;
+            }
+
+            QProgressBar::chunk:disabled {
+                background-color: #26486B;
+                color: #788D9C;
+                border-radius: 4px;
+            }
+        ''')
         self.progress = pb
 
         lbl = QLabel(qtroot)
-        lbl.setGeometry(20, 190, 360, 20)
+        lbl.setGeometry(gridsize, round((rect.height() - gridsize)*0.75),
+                        rect.width() - 2*gridsize, gridsize)
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setText(text)
+        palette = lbl.palette()
+        palette.setColor(QPalette.Window, lbl.palette().color(QPalette.Window))
+        lbl.setAutoFillBackground(True)
+        lbl.setPalette(palette)
         self.label = lbl
 
     @log_func_call(DEBUGLOW2, trace_only=True)
@@ -364,6 +409,7 @@ class QtApplicationBase:
             app.processEvents()
             self.splash = splash
 
+        from .icons.iconfont import init_iconfonts
         init_iconfonts()
         # set_high_dpi_support(log=log)
         self.create_first_window(*firstwin_args, **firstwin_kwargs)
@@ -409,7 +455,7 @@ class QtApplicationBase:
         raise NotImplementedError('Abstract method not implemented')
 
     @log_func_call
-    def close_splash(self, delegate: QWidget):
+    def close_splash(self, delegate: QWidget = None):
         if self.splash:
             qtsplash: QSplashScreen = self.splash.get_window_qtroot()
             qtsplash.finish(delegate)
