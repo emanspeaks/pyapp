@@ -4,7 +4,7 @@ from pyapp.gui.icons.iconfont.sources import THIRDPARTY_FONTSPEC
 from pyapp.gui.abc import QtWindowController, get_qt_app, get_gui_app
 from pyapp.gui.dialogs.config import ConfigTreeDialog
 
-from ...logging import log_func_call
+from ...logging import log_func_call, DEBUGLOW2
 from ..constants import AUTO_SEARCH_TIMEOUT, ALL_COLLECTIONS
 from ..utils import iconstring_to_specname_iconname
 
@@ -25,6 +25,7 @@ class MainWindow(QtWindowController):
 
         self.create_timer()
 
+    @log_func_call
     def create_filter_models(self):
         model = IconModel()
         model.setStringList(sorted(self.get_icon_names()))
@@ -34,6 +35,7 @@ class MainWindow(QtWindowController):
         proxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxyModel = proxyModel
 
+    @log_func_call
     def create_timer(self):
         filterTimer = QTimer(self.get_window_qtroot())
         filterTimer.setSingleShot(True)
@@ -46,6 +48,7 @@ class MainWindow(QtWindowController):
         dlg = ConfigTreeDialog(self)
         dlg.show()
 
+    @log_func_call(DEBUGLOW2)
     def get_icon_names(self):
         iconNames = []
         for k, v in THIRDPARTY_FONTSPEC.items():
@@ -53,9 +56,11 @@ class MainWindow(QtWindowController):
 
         return iconNames
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def get_font_names(self):
         return THIRDPARTY_FONTSPEC.keys()
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def triggerImmediateUpdate(self):
         """
         Stop the timer used for committing the search term and update the
@@ -64,6 +69,7 @@ class MainWindow(QtWindowController):
         self.filterTimer.stop()
         self.updateFilter()
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def updateFilter(self):
         win = self.window
         reString = ""
@@ -81,6 +87,7 @@ class MainWindow(QtWindowController):
         # supported in Qt 5.12 or later.
         self.proxyModel.setFilterRegularExpression(reString)
 
+    @log_func_call
     def copyIconText(self):
         """
         Copy the name of the currently selected icon to the clipboard.
@@ -92,6 +99,7 @@ class MainWindow(QtWindowController):
         clipboard = get_qt_app().clipboard()
         clipboard.setText(indexes[0].data())
 
+    @log_func_call
     def copyIconPyAppCode(self):
         indexes = self.window.listView.qtroot.selectedIndexes()
         if not indexes:
@@ -106,6 +114,7 @@ class MainWindow(QtWindowController):
         clipboard = get_qt_app().clipboard()
         clipboard.setText(code)
 
+    @log_func_call
     def updateNameField(self):
         """
         Update field to the name of the currently selected icon.
@@ -122,14 +131,17 @@ class MainWindow(QtWindowController):
         win.copyButton.setDisabled(False)
         win.copyPyAppButton.setDisabled(False)
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def triggerDelayedUpdate(self):
         self.filterTimer.stop()
         self.filterTimer.start()
 
+    @log_func_call
     def updateStyle(self, text: str):
         # qtawesome.reset_cache()
         get_gui_app().set_theme(text)
 
+    @log_func_call
     def updateColumns(self):
         win = self.window
         win.listView.setColumns(win.comboColumns.currentData())

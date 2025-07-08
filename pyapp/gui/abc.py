@@ -382,9 +382,9 @@ class QtApplicationBase:
     def create_splash(self, *args, **kwargs) -> QtSplashScreen:
         return QtSplashScreen(QPixmap(), *args, **kwargs)
 
-    @log_func_call
     @load_status_step("GUI initialized", show_step_done=True,
                       show_step_start=False)
+    @log_func_call
     def init_gui(self, app_args: list[str], *firstwin_args, **firstwin_kwargs):
         log = get_logger()
         log.debug('starting app main')

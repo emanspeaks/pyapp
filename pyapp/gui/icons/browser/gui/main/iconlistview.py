@@ -4,8 +4,11 @@ from PySide2.QtGui import QResizeEvent
 
 from pyapp.gui.abc import QtWidgetWrapper
 
+from ...logging import log_func_call, DEBUGLOW2
+
 
 class IconListView(QtWidgetWrapper):
+    @log_func_call
     def __init__(self, columns: int, parent: QtWidgetWrapper = None):
         super().__init__(parent)
         qtwin = parent.qtroot
@@ -18,6 +21,7 @@ class IconListView(QtWidgetWrapper):
 
         self.columns = columns
 
+    @log_func_call
     def setColumns(self, cols: int):
         """
         Set columns number and resize.
@@ -25,6 +29,7 @@ class IconListView(QtWidgetWrapper):
         self.columns = cols
         self.resize()
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def resize(self):
         """
         Set grid and icon size taking into account the number of columns.
@@ -42,6 +47,7 @@ class IconListView(QtWidgetWrapper):
         lv.setGridSize(QSize(tileWidth, tileWidth))
         lv.setIconSize(QSize(iconWidth, iconWidth))
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
     def resizeEvent(self, event: QResizeEvent):
         self.resize()
         return QListView.resizeEvent(self.qtroot, event)

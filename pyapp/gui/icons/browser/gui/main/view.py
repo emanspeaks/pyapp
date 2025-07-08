@@ -48,11 +48,13 @@ class MainWindowView(QtWindowWrapper):
         self.controller.updateStyle(self.comboStyle.currentText())
 
     @load_status_step("Creating toolbars")
+    @log_func_call
     def create_toolbars(self):
         self.create_filter_toolbar()
         self.create_name_toolbar()
         self.create_view_toolbar()
 
+    @log_func_call
     def create_filter_toolbar(self):
         qtroot = self.qtroot
         ctrl = self.controller
@@ -86,6 +88,7 @@ class MainWindowView(QtWindowWrapper):
         self.lineEditFilter = lineEditFilter
         toolbar.addWidget(lineEditFilter)
 
+    @log_func_call
     def create_name_toolbar(self):
         qtroot = self.qtroot
         ctrl = self.controller
@@ -129,6 +132,7 @@ class MainWindowView(QtWindowWrapper):
         self.copyPyAppButton = copyPyAppButton
         toolbar.addWidget(copyPyAppButton)
 
+    @log_func_call
     def create_view_toolbar(self):
         qtroot = self.qtroot
         ctrl = self.controller
@@ -172,6 +176,7 @@ class MainWindowView(QtWindowWrapper):
     def create_basewidget(self):
         return WindowBaseFrame(self)
 
+    @log_func_call
     def create_icon_list_view(self):
         ctrl = self.controller
         listview = IconListView(DEFAULT_VIEW_COLUMNS, self)
@@ -187,6 +192,7 @@ class MainWindowView(QtWindowWrapper):
         selmodel.selectionChanged.connect(ctrl.updateNameField)
         self.layout.addWidget(lvwidget)
 
+    @log_func_call
     def set_tab_order(self):
         qtroot = self.qtroot
         qtroot.setTabOrder(self.comboFont, self.lineEditFilter)
@@ -197,6 +203,7 @@ class MainWindowView(QtWindowWrapper):
         qtroot.setTabOrder(self.copyButton, self.copyPyAppButton)
         qtroot.setTabOrder(self.copyPyAppButton, self.comboFont)
 
+    @log_func_call
     def setup_shortcuts(self):
         # Shortcuts
         ctrl = self.controller
@@ -204,6 +211,7 @@ class MainWindowView(QtWindowWrapper):
         QShortcut(QKeySequence(Qt.Key_Return), qtroot, ctrl.copyIconText)
         QShortcut(QKeySequence("Ctrl+F"), qtroot, self.lineEditFilter.setFocus)
 
+    @log_func_call
     def set_window_geometry(self):
         qtroot = self.qtroot
         qtapp = get_qt_app()
