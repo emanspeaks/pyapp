@@ -163,7 +163,8 @@ class MainWindowView(QtWindowWrapper):
         )
         current_theme = app.get_theme()
         theme_idx = None
-        for i, t in enumerate(sorted(app.themes.list_themes())):
+        themes = app.themes.list_themes(always_include_dark=True)
+        for i, t in enumerate(sorted(themes)):
             comboStyle.addItem(t, i)
             if t == current_theme:
                 theme_idx = i
