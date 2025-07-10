@@ -4,6 +4,7 @@ from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QPalette, QColor
 
 from ...logging import log_func_call
+from ...utils.encoding import read_text_utf8
 
 
 @log_func_call
@@ -40,4 +41,4 @@ def vibedark(app: QApplication):
 
     app.setPalette(palette)
     qss = Path(__file__).parent/"assets/vibedark.qss"
-    app.setStyleSheet(qss.read_text())
+    app.setStyleSheet(read_text_utf8(qss))
