@@ -7,11 +7,10 @@ from PySide2.QtWidgets import (
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QCursor
 
-from pyapp.gui.abc import QtWindowWrapper, get_qt_app
+from pyapp.gui.abc import QtWindowWrapper, get_qt_app, get_gui_app
 from pyapp.gui.widgets.windowbase import WindowBaseFrame
 from pyapp.gui.loadstatus import load_status_step
 from pyapp.gui.utils import create_action, create_toolbar_expanding_spacer
-from pyapp.gui.themes import DEFAULT_DARK_PALETTE, DEFAULT_LIGHT_PALETTE
 
 from ...app import IconBrowserApp
 from ...logging import log_func_call
@@ -136,6 +135,7 @@ class MainWindowView(QtWindowWrapper):
     def create_view_toolbar(self):
         qtroot = self.qtroot
         ctrl = self.controller
+        app = get_gui_app()
 
         toolbar = QToolBar("View", qtroot)
         qtroot.addToolBar(Qt.TopToolBarArea, toolbar)
@@ -161,8 +161,14 @@ class MainWindowView(QtWindowWrapper):
         comboStyle.setToolTip(
             "Select color palette for the icons and the icon browser"
         )
-        comboStyle.addItem(DEFAULT_DARK_PALETTE, 0)
-        comboStyle.addItem(DEFAULT_LIGHT_PALETTE, 1)
+        current_theme = app.get_theme()
+        theme_idx = None
+        for i, t in enumerate(sorted(app.themes.list_themes())):
+            comboStyle.addItem(t, i)
+            if t == current_theme:
+                theme_idx = i
+
+        comboStyle.setCurrentIndex(theme_idx if theme_idx is not None else 0)
         comboStyle.currentTextChanged.connect(ctrl.updateStyle)
         comboStyle.setMinimumWidth(100)
         self.comboStyle = comboStyle

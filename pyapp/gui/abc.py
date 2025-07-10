@@ -439,7 +439,9 @@ class QtApplicationBase:
         if tnew:
             PyApp.set(f'{LOCAL_CFG_KEY}.theme', t)
 
-        self.themes.apply_theme(t)
+        themes = self.themes
+        themes.apply_theme()  # reset theme to default
+        themes.apply_theme(t)
 
     @log_func_call
     def get_theme(self):
