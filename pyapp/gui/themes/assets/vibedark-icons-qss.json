@@ -1,0 +1,324 @@
+{
+  "QMainWindow::separator:horizontal": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines-vertical"
+  },
+  "QMainWindow::separator:vertical": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines"
+  },
+  "QAbstractItemView::indicator:unchecked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QAbstractItemView::indicator:checked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QAbstractItemView::indicator:indeterminate": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QAbstractItemView::indicator:indeterminate:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QAbstractItemView::indicator:indeterminate:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QCheckBox::indicator:unchecked": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QCheckBox::indicator:unchecked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QCheckBox::indicator:unchecked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QCheckBox::indicator:checked": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QCheckBox::indicator:checked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QCheckBox::indicator:checked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QRadioButton::indicator:checked": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QRadioButton::indicator:checked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QRadioButton::indicator:checked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QAbstractSpinBox::up-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QAbstractSpinBox::up-button:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QAbstractSpinBox::up-button:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QAbstractSpinBox::down-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QAbstractSpinBox::down-button:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QAbstractSpinBox::down-button:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QAbstractSpinBox::indicator:indeterminate": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QAbstractSpinBox::indicator:indeterminate:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QAbstractSpinBox::indicator:indeterminate:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QAbstractSpinBox::indicator:unchecked": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-blank"
+  },
+  "QAbstractSpinBox::indicator:unchecked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-blank"
+  },
+  "QAbstractSpinBox::indicator:unchecked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-blank"
+  },
+  "QAbstractSpinBox::indicator:checked": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QAbstractSpinBox::indicator:checked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QAbstractSpinBox::indicator:checked:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "radiobox-marked"
+  },
+  "QMenu::indicator:non-exclusive:checked": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QAbstractScrollArea::corner": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QScrollBar::add-line:horizontal": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QScrollBar::add-line:vertical": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QScrollBar::add-line:vertical:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QScrollBar::sub-line:horizontal": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-left"
+  },
+  "QScrollBar::sub-line:horizontal:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-left"
+  },
+  "QScrollBar::sub-line:vertical": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QScrollBar::sub-line:vertical:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QSizeGrip": {
+    "fontspec_name": "Material6",
+    "icon_name": "resize-bottom-right"
+  },
+  "QToolBar::handle:horizontal": {
+    "fontspec_name": "Material6",
+    "icon_name": "drag-horizontal"
+  },
+  "QToolBar::handle:vertical": {
+    "fontspec_name": "Material6",
+    "icon_name": "drag-vertical"
+  },
+  "QToolBar::separator:horizontal": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines"
+  },
+  "QToolBar::separator:vertical": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines-vertical"
+  },
+  "QMenu::right-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QSpinBox::up-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QSpinBox::up-button:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QSpinBox::down-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QSpinBox::down-button:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QComboBox::drop-down": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QComboBox::down-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QComboBox::down-arrow:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QTabBar::scroller.QTabBar QToolButton::left-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-left"
+  },
+  "QTabBar::scroller.QTabBar QToolButton::left-arrow:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-left"
+  },
+  "QTabBar::scroller.QTabBar QToolButton::right-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QTabBar::scroller.QTabBar QToolButton::right-arrow:disabled": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-right"
+  },
+  "QDockWidget": {
+    "fontspec_name": "Material6",
+    "icon_name": "window-restore"
+  },
+  "QDockWidget::close-button:pressed": {
+    "fontspec_name": "Material6",
+    "icon_name": "close"
+  },
+  "QDockWidget::float-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "dock-window"
+  },
+  "QDockWidget::float-button:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "dock-window"
+  },
+  "QDockWidget::float-button:pressed": {
+    "fontspec_name": "Material6",
+    "icon_name": "dock-window"
+  },
+  // "QTreeView": {
+  //   "fontspec_name": "None",
+  //   "icon_name": "none"
+  // },
+  "QTreeView::branch:has-siblings:!adjoins-item": {
+    "fontspec_name": "Material6",
+    "icon_name": "format-line-style"
+  },
+  "QTreeView::branch:has-siblings:adjoins-item": {
+    "fontspec_name": "Material6",
+    "icon_name": "source-branch"
+  },
+  "QTreeView::branch:!has-children:!has-siblings:adjoins-item": {
+    "fontspec_name": "Material6",
+    "icon_name": "format-line-style"
+  },
+  "QTreeView::indicator:checked": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QTreeView::indicator:checked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-marked"
+  },
+  "QTreeView::indicator:unchecked": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QTreeView::indicator:unchecked:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-blank-outline"
+  },
+  "QTreeView::indicator:indeterminate": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QTreeView::indicator:indeterminate:focus": {
+    "fontspec_name": "Material6",
+    "icon_name": "checkbox-intermediate"
+  },
+  "QDateTimeEdit::down-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QDateTimeEdit::up-arrow": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-up"
+  },
+  "QSplitter::handle:horizontal": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines-vertical"
+  },
+  "QSplitter::handle:vertical": {
+    "fontspec_name": "Fa6.Solid",
+    "icon_name": "grip-lines"
+  },
+  "QDoubleSpinBox::down-button": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  },
+  "QDoubleSpinBox::down-button:hover": {
+    "fontspec_name": "Material6",
+    "icon_name": "chevron-down"
+  }
+  // usage context entries...?? below, but turned up as duplicates
+  //
+  // "QSpinBox::down-button": {
+  //   "fontspec_name": "Material6",
+  //   "icon_name": "chevron-down"
+  // },
+  // "QSpinBox::down-button:hover": {
+  //   "fontspec_name": "Material6",
+  //   "icon_name": "chevron-down"
+  // }
+}

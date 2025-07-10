@@ -400,8 +400,6 @@ class QtApplicationBase:
         app = self.create_qt_inst(app_args)
         self.qtroot = app
         PyApp.set('Qt_version', qVersion())
-        self.init_themes()
-        self.set_theme()
 
         splash = self.create_splash()
         if splash:
@@ -411,6 +409,9 @@ class QtApplicationBase:
 
         from .icons.iconfont import init_iconfonts
         init_iconfonts()
+
+        self.init_themes()
+        self.set_theme()
         # set_high_dpi_support(log=log)
         self.create_first_window(*firstwin_args, **firstwin_kwargs)
         self.gui_initialized = True
@@ -426,6 +427,7 @@ class QtApplicationBase:
         self.qtroot.exec_()
 
     @log_func_call
+    @load_status_step("Initializing themes")
     def init_themes(self):
         self.themes = ThemeMap(self.qtroot)
 
