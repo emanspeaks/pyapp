@@ -14,4 +14,8 @@ class IconModel(QStringListModel):
                 spec = iconstring_to_iconspec(iconString)
                 return spec.icon()
             return None
+
+        if role == Qt.ToolTipRole:
+            return self.data(index, role=Qt.DisplayRole)
+
         return super().data(index, role)
