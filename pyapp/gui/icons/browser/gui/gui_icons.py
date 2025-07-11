@@ -1,10 +1,8 @@
+from pyapp.gui.icons.iconfont import IconSpec
 from pyapp.gui.icons.thirdparty.codicons import Codicons
 from pyapp.gui.icons.thirdparty.codicons import names as codicon_names
-from pyapp.gui.icons.iconfont import IconSpec
 from pyapp.gui.icons.thirdparty.fa5.solid import names as fa5_s_names
 from pyapp.gui.icons.thirdparty.fa5.solid import Fa5_Solid
-# from pyapp.gui.icons.thirdparty.fluentui.filled import FluentUI_Filled
-# from pyapp.gui.icons.thirdparty.fluentui.filled import names as fluentui_f_names  # noqa: E501
 from pyapp.gui.icons.thirdparty.fluentui.resize import FluentUI_Resize
 from pyapp.gui.icons.thirdparty.fluentui.resize import names as fluentui_r_names  # noqa: E501
 

@@ -17,7 +17,7 @@ from pyapp.gui.utils import (
 
 from ...app import IconBrowserApp
 from ...logging import log_func_call
-from ..icons import ConfigIcon, CopyCodeIcon, CopyNameIcon
+from ..gui_icons import ConfigIcon, CopyCodeIcon, CopyNameIcon
 from ..constants import (
     ALL_COLLECTIONS, DEFAULT_VIEW_COLUMNS, VIEW_COLUMNS_OPTIONS
 )
