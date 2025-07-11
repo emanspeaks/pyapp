@@ -88,6 +88,11 @@ class MainWindow(QtWindowController):
         self.proxyModel.setFilterRegularExpression(reString)
 
     @log_func_call
+    def doubleClickIcon(self):
+        self.updateNameField()
+        self.copyIconPyAppCode()
+
+    @log_func_call
     def copyIconText(self):
         """
         Copy the name of the currently selected icon to the clipboard.
@@ -107,9 +112,15 @@ class MainWindow(QtWindowController):
 
         iconstring = indexes[0].data()
         specname, iconname = iconstring_to_specname_iconname(iconstring)
-        code = (f"from pyapp.gui.icons.iconfont import IconSpec\n"
-                "icon = IconSpec.generate_iconspec("
-                f"{specname!r}, {iconname!r})\n")
+        spec = THIRDPARTY_FONTSPEC[specname]
+        fontmod = spec.module_qualname()
+        fontclass = spec.classname
+        shortname = spec.shortname
+
+        code = ("from pyapp.gui.icons.iconfont import IconSpec\n"
+                f"from {fontmod} import {fontclass}\n"
+                f"from {fontmod} import names as {shortname}_names  # noqa: E501\n"
+                f"{shortname}_{iconname}_ispec = IconSpec.generate_iconspec({fontclass}, glyph={shortname}_names.{iconname})  # noqa: E501\n")
 
         clipboard = get_qt_app().clipboard()
         clipboard.setText(code)
@@ -136,6 +147,11 @@ class MainWindow(QtWindowController):
         self.filterTimer.stop()
         self.filterTimer.start()
 
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def filter_text_changed(self):
+        self.style_placeholder_text()
+        self.triggerDelayedUpdate()
+
     @log_func_call
     def updateStyle(self, text: str):
         # qtawesome.reset_cache()
@@ -145,3 +161,9 @@ class MainWindow(QtWindowController):
     def updateColumns(self):
         win = self.window
         win.listView.setColumns(win.comboColumns.currentData())
+
+    @log_func_call(DEBUGLOW2, trace_only=True)
+    def style_placeholder_text(self):
+        win = self.window
+        txtbox = win.lineEditFilter
+        txtbox.style().polish(txtbox)

@@ -5,7 +5,6 @@ from ..logging import (
     log_func_call as _log_func_call,
 )
 from .splash import SplashScreen
-from .main import MainWindow
 from .icons import ProgramIcon
 
 
@@ -21,6 +20,7 @@ class IconBrowserGui(QtApplicationBase):
 
     @_log_func_call
     def create_first_window(self, *args, **kwargs) -> QtWindowWrapper:
+        from .main import MainWindow
         mw = MainWindow()
         self.windows.append(mw)
         mwview = mw.get_window()

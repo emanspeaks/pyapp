@@ -3,7 +3,7 @@ from PySide2.QtWidgets import (
     QLabel
 )
 from PySide2.QtCore import qVersion, Qt, QRect
-from PySide2.QtGui import QPixmap, QMouseEvent, QPalette
+from PySide2.QtGui import QPixmap, QMouseEvent, QPalette, QCursor
 
 from ..logging import get_logger, log_func_call, DEBUGLOW2, DEBUG
 from ..app import PyApp
@@ -153,6 +153,15 @@ class QtWindowWrapperBase(QtGetWindowMixin):
         qtroot.activateWindow()
         qtroot.showNormal()
 
+    @log_func_call
+    def center_window_in_current_screen(self):
+        qtroot = self.qtroot
+        qtapp = get_qt_app()
+        centerPoint = qtapp.screenAt(QCursor.pos()).geometry().center()
+        geo = qtroot.geometry()
+        geo.moveCenter(centerPoint)
+        qtroot.setGeometry(geo)
+
 
 class QtSplashScreen(QtWindowWrapperBase):
     @log_func_call(DEBUGLOW2, trace_only=True)
@@ -173,6 +182,7 @@ class QtSplashScreen(QtWindowWrapperBase):
         self.qtroot: QSplashScreen
         qtroot = self.qtroot
         qtroot.mousePressEvent = self.mousePressEvent
+        self.center_window_in_current_screen()
 
         rect = pixmap.rect() if pixmap else QRect(0, 0, 400, 400)
 
@@ -223,6 +233,14 @@ class QtSplashScreen(QtWindowWrapperBase):
         palette.setColor(QPalette.Window, lbl.palette().color(QPalette.Window))
         lbl.setAutoFillBackground(True)
         lbl.setPalette(palette)
+        lbl.setStyleSheet('''
+            QLabel {
+                padding: 2px 8px;
+                background: #444a5a;
+                color: #fff;
+                border-radius: 4px;
+            }
+        ''')
         self.label = lbl
 
     @log_func_call(DEBUGLOW2, trace_only=True)
