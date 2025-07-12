@@ -1,25 +1,22 @@
-from PySide2.QtCore import Qt, QSize
-from PySide2.QtWidgets import QListView
-from PySide2.QtGui import QResizeEvent
-
-from pyapp.gui.abc import QtWidgetWrapper
+from pyapp.gui.qt import Qt, QSize, QListView, QResizeEvent
+from pyapp.gui.widgets import QtWidgetWrapper, GuiWidgetParentType
 
 from ...logging import log_func_call, DEBUGLOW2
 
 
-class IconListView(QtWidgetWrapper):
+class IconListView(QtWidgetWrapper[QListView]):
     @log_func_call
-    def __init__(self, columns: int, parent: QtWidgetWrapper = None):
+    def __init__(self, columns: int, parent: GuiWidgetParentType = None):
         super().__init__(parent)
-        qtwin = parent.qtroot
+        self.columns = columns
 
+    def create_qtobj(self):
+        qtwin = self.gui_parent.gui_view.qtobj
         lv = QListView(qtwin)
         lv.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         lv.resize = self.resize
         lv.resizeEvent = self.resizeEvent
-        self.qtroot: QListView = lv
-
-        self.columns = columns
+        return lv
 
     @log_func_call
     def setColumns(self, cols: int):
@@ -34,7 +31,7 @@ class IconListView(QtWidgetWrapper):
         """
         Set grid and icon size taking into account the number of columns.
         """
-        lv = self.qtroot
+        lv = self.qtobj
         width = lv.viewport().width() - 30
         # The minus 30 above ensures we don't end up with an item width that
         # can't be drawn the expected number of times across the view without
@@ -50,4 +47,4 @@ class IconListView(QtWidgetWrapper):
     @log_func_call(DEBUGLOW2, trace_only=True)
     def resizeEvent(self, event: QResizeEvent):
         self.resize()
-        return QListView.resizeEvent(self.qtroot, event)
+        return QListView.resizeEvent(self.qtobj, event)

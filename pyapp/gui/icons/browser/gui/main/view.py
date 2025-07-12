@@ -1,14 +1,11 @@
 from typing import TYPE_CHECKING
 
-from PySide2.QtWidgets import (
+from pyapp.gui.qt import (
     QToolBar, QComboBox, QListView, QLineEdit, QVBoxLayout,
-    QShortcut,
+    QShortcut, Qt, QKeySequence,
 )
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QKeySequence
-
-from pyapp.gui.abc import QtWindowWrapper, get_gui_app
-from pyapp.gui.widgets.windowbase import WindowBaseFrame
+from pyapp.gui.window import GuiWindowView
+from pyapp.gui.widgets.viewbase import GuiViewBaseFrame
 from pyapp.gui.loadstatus import load_status_step
 from pyapp.gui.utils import (
     create_action, create_toolbar_expanding_spacer,
@@ -23,22 +20,20 @@ from ..constants import (
 )
 from .iconlistview import IconListView
 if TYPE_CHECKING:
-    from .ctrl import MainWindow
+    from .pres import MainWindow
 
 
-class MainWindowView(QtWindowWrapper):
+class MainWindowView(GuiWindowView['MainWindow', GuiViewBaseFrame]):
     @log_func_call
-    def __init__(self, controller: 'MainWindow'):
-        super().__init__(IconBrowserApp.APP_NAME, controller)
-        self.basewidget: WindowBaseFrame
-        self.controller: MainWindow
-        self.get_window_qtroot().resize(*IconBrowserApp.get_default_win_size())
-        qtroot = self.qtroot
-        qtroot.setMinimumSize(900, 600)
+    def __init__(self, basetitle: str, presenter: 'MainWindow' = None):
+        super().__init__(basetitle, presenter)
+        qtobj = self.qtobj
+        qtobj.resize(*IconBrowserApp.get_default_win_size())
+        qtobj.setMinimumSize(900, 600)
 
         layout = QVBoxLayout()
         self.layout = layout
-        self.get_qtbasewidget().setLayout(layout)
+        self.basewidget.qtobj.setLayout(layout)
 
         self.create_toolbars()
         self.create_icon_list_view()
@@ -47,7 +42,7 @@ class MainWindowView(QtWindowWrapper):
 
         self.lineEditFilter.setFocus()
         self.center_window_in_current_screen()
-        self.controller.updateStyle(self.comboStyle.currentText())
+        self.gui_pres.updateStyle(self.comboStyle.currentText())
 
     @load_status_step("Creating toolbars")
     @log_func_call
@@ -58,12 +53,12 @@ class MainWindowView(QtWindowWrapper):
 
     @log_func_call
     def create_filter_toolbar(self):
-        qtroot = self.qtroot
-        ctrl = self.controller
+        qtobj = self.qtobj
+        pres = self.gui_pres
 
-        toolbar = QToolBar("Filters", qtroot)
-        qtroot.addToolBar(Qt.TopToolBarArea, toolbar)
-        qtroot.addToolBarBreak()
+        toolbar = QToolBar("Filters", qtobj)
+        qtobj.addToolBar(Qt.TopToolBarArea, toolbar)
+        qtobj.addToolBarBreak()
         self.filter_toolbar = toolbar
 
         comboFont = QComboBox()
@@ -73,8 +68,8 @@ class MainWindowView(QtWindowWrapper):
         )
         comboFont.setMaximumWidth(125)
         comboFont.addItems([ALL_COLLECTIONS]
-                           + sorted(ctrl.get_font_names()))
-        comboFont.currentIndexChanged.connect(ctrl.triggerImmediateUpdate)
+                           + sorted(pres.get_font_names()))
+        comboFont.currentIndexChanged.connect(pres.triggerImmediateUpdate)
         comboFont = comboFont
         self.comboFont = comboFont
         toolbar.addWidget(comboFont)
@@ -85,8 +80,8 @@ class MainWindowView(QtWindowWrapper):
         # lineEditFilter.setMaximumWidth(400)
         set_widget_sizepolicy_expanding(lineEditFilter)
         lineEditFilter.setAlignment(Qt.AlignLeft)
-        lineEditFilter.textChanged.connect(ctrl.filter_text_changed)
-        lineEditFilter.returnPressed.connect(ctrl.triggerImmediateUpdate)  # noqa: E501
+        lineEditFilter.textChanged.connect(pres.filter_text_changed)
+        lineEditFilter.returnPressed.connect(pres.triggerImmediateUpdate)  # noqa: E501
         lineEditFilter.setClearButtonEnabled(True)
         lineEditFilter.setPlaceholderText("Search icons")
         self.lineEditFilter = lineEditFilter
@@ -94,11 +89,11 @@ class MainWindowView(QtWindowWrapper):
 
     @log_func_call
     def create_name_toolbar(self):
-        qtroot = self.qtroot
-        ctrl = self.controller
+        qtobj = self.qtobj
+        pres = self.gui_pres
 
-        toolbar = QToolBar("Icon Name", qtroot)
-        qtroot.addToolBar(Qt.TopToolBarArea, toolbar)
+        toolbar = QToolBar("Icon Name", qtobj)
+        qtobj.addToolBar(Qt.TopToolBarArea, toolbar)
         self.name_toolbar = toolbar
 
         # Icon name section
@@ -118,17 +113,17 @@ class MainWindowView(QtWindowWrapper):
 
         toolbar.addSeparator()
 
-        copyButton = create_action(qtroot, "Copy Name", CopyNameIcon.icon(),
-                                   ctrl.copyIconText, enabled=False,
+        copyButton = create_action(qtobj, "Copy Name", CopyNameIcon.icon(),
+                                   pres.copyIconText, enabled=False,
                                    tooltip="Copy selected icon "
                                    "full identifier to the clipboard")
         self.copyButton = copyButton
         toolbar.addAction(copyButton)
         show_toolbtn_icon_and_text(toolbar.widgetForAction(copyButton))
 
-        copyPyAppButton = create_action(qtroot, "Copy PyApp Code",
+        copyPyAppButton = create_action(qtobj, "Copy PyApp Code",
                                         CopyCodeIcon.icon(),
-                                        ctrl.copyIconPyAppCode, enabled=False,
+                                        pres.copyIconPyAppCode, enabled=False,
                                         tooltip="Copy selected icon "
                                         "PyApp code to the clipboard")
         self.copyPyAppButton = copyPyAppButton
@@ -137,12 +132,12 @@ class MainWindowView(QtWindowWrapper):
 
         # @log_func_call
         # def create_view_toolbar(self):
-        # qtroot = self.qtroot
+        # qtobj = self.qtobj
         # ctrl = self.controller
-        app = get_gui_app()
+        app = self.gui_app
 
-        # toolbar = QToolBar("View", qtroot)
-        # qtroot.addToolBar(Qt.TopToolBarArea, toolbar)
+        # toolbar = QToolBar("View", qtobj)
+        # qtobj.addToolBar(Qt.TopToolBarArea, toolbar)
         # self.view_toolbar = toolbar
 
         toolbar.addWidget(create_toolbar_expanding_spacer())
@@ -157,7 +152,7 @@ class MainWindowView(QtWindowWrapper):
         comboColumns.setCurrentIndex(
             comboColumns.findData(DEFAULT_VIEW_COLUMNS)
         )
-        comboColumns.currentTextChanged.connect(ctrl.updateColumns)
+        comboColumns.currentTextChanged.connect(pres.updateColumns)
         comboColumns.setMinimumWidth(75)
         self.comboColumns = comboColumns
         toolbar.addWidget(comboColumns)
@@ -176,48 +171,48 @@ class MainWindowView(QtWindowWrapper):
                 theme_idx = i
 
         comboStyle.setCurrentIndex(theme_idx if theme_idx is not None else 0)
-        comboStyle.currentTextChanged.connect(ctrl.updateStyle)
+        comboStyle.currentTextChanged.connect(pres.updateStyle)
         comboStyle.setMinimumWidth(100)
         self.comboStyle = comboStyle
         toolbar.addWidget(comboStyle)
 
-        toolbar.addAction(create_action(qtroot, "Config", ConfigIcon.icon(),
-                                        ctrl.click_config))
+        toolbar.addAction(create_action(qtobj, "Config", ConfigIcon.icon(),
+                                        pres.click_config))
 
     @log_func_call
     def create_basewidget(self):
-        return WindowBaseFrame(self)
+        return GuiViewBaseFrame(self)
 
     @log_func_call
     def create_icon_list_view(self):
-        ctrl = self.controller
+        pres = self.gui_pres
         listview = IconListView(DEFAULT_VIEW_COLUMNS, self)
         self.listView = listview
 
-        lvwidget = listview.qtroot
+        lvwidget = listview.qtobj
         lvwidget.setUniformItemSizes(True)
         lvwidget.setViewMode(QListView.IconMode)
-        lvwidget.setModel(ctrl.proxyModel)
+        lvwidget.setModel(pres.proxyModel)
         lvwidget.setContextMenuPolicy(Qt.CustomContextMenu)
-        lvwidget.doubleClicked.connect(ctrl.doubleClickIcon)
+        lvwidget.doubleClicked.connect(pres.doubleClickIcon)
         selmodel = lvwidget.selectionModel()
-        selmodel.selectionChanged.connect(ctrl.updateNameField)
+        selmodel.selectionChanged.connect(pres.updateNameField)
         self.layout.addWidget(lvwidget)
 
     @log_func_call
     def set_tab_order(self):
-        qtroot = self.qtroot
-        qtroot.setTabOrder(self.comboFont, self.lineEditFilter)
-        qtroot.setTabOrder(self.lineEditFilter, self.comboColumns)
-        qtroot.setTabOrder(self.comboColumns, self.comboStyle)
-        qtroot.setTabOrder(self.comboStyle, self.listView.qtroot)
-        qtroot.setTabOrder(self.listView.qtroot, self.nameField)
-        qtroot.setTabOrder(self.nameField, self.comboFont)
+        qtobj = self.qtobj
+        qtobj.setTabOrder(self.comboFont, self.lineEditFilter)
+        qtobj.setTabOrder(self.lineEditFilter, self.comboColumns)
+        qtobj.setTabOrder(self.comboColumns, self.comboStyle)
+        qtobj.setTabOrder(self.comboStyle, self.listView.qtobj)
+        qtobj.setTabOrder(self.listView.qtobj, self.nameField)
+        qtobj.setTabOrder(self.nameField, self.comboFont)
 
     @log_func_call
     def setup_shortcuts(self):
         # Shortcuts
-        ctrl = self.controller
-        qtroot = self.qtroot
-        QShortcut(QKeySequence(Qt.Key_Return), qtroot, ctrl.copyIconText)
-        QShortcut(QKeySequence("Ctrl+F"), qtroot, self.lineEditFilter.setFocus)
+        pres = self.gui_pres
+        qtobj = self.qtobj
+        QShortcut(QKeySequence(Qt.Key_Return), qtobj, pres.copyIconText)
+        QShortcut(QKeySequence("Ctrl+F"), qtobj, self.lineEditFilter.setFocus)

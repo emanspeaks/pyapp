@@ -1,10 +1,10 @@
-from PySide2.QtCore import QTimer, QSortFilterProxyModel, Qt
-
+from pyapp.gui.qt import QTimer, QSortFilterProxyModel, Qt
 from pyapp.gui.icons.iconfont.sources import THIRDPARTY_FONTSPEC
-from pyapp.gui.abc import QtWindowController, get_qt_app, get_gui_app
+from pyapp.gui.window import GuiWindow
 from pyapp.gui.dialogs.config import ConfigTreeDialog
 
 from ...logging import log_func_call, DEBUGLOW2
+from ...app import IconBrowserApp
 from ..constants import AUTO_SEARCH_TIMEOUT, ALL_COLLECTIONS
 from ..utils import iconstring_to_specname_iconname
 
@@ -12,18 +12,17 @@ from .view import MainWindowView
 from .iconmodel import IconModel
 
 
-class MainWindow(QtWindowController):
+class MainWindow(GuiWindow[MainWindowView]):
     @log_func_call
     def __init__(self):
-        # need models before creating the view
+        # need filter models before creating the view
         self.create_filter_models()
-
-        super().__init__()
-        win = MainWindowView(self)
-        self.window: MainWindowView = win
-        # qtroot = win.qtroot
-
+        super().__init__(IconBrowserApp.APP_NAME)
         self.create_timer()
+
+    def create_gui_view(self, basetitle: str, *args,
+                        **kwargs) -> MainWindowView:
+        return MainWindowView(basetitle, self, *args, **kwargs)
 
     @log_func_call
     def create_filter_models(self):
@@ -37,7 +36,7 @@ class MainWindow(QtWindowController):
 
     @log_func_call
     def create_timer(self):
-        filterTimer = QTimer(self.get_window_qtroot())
+        filterTimer = QTimer(self.gui_view.qtobj)
         filterTimer.setSingleShot(True)
         filterTimer.setInterval(AUTO_SEARCH_TIMEOUT)
         filterTimer.timeout.connect(self.updateFilter)
@@ -71,7 +70,7 @@ class MainWindow(QtWindowController):
 
     @log_func_call(DEBUGLOW2, trace_only=True)
     def updateFilter(self):
-        win = self.window
+        win = self.gui_view
         reString = ""
 
         group = win.comboFont.currentText()
@@ -97,16 +96,16 @@ class MainWindow(QtWindowController):
         """
         Copy the name of the currently selected icon to the clipboard.
         """
-        indexes = self.window.listView.qtroot.selectedIndexes()
+        indexes = self.gui_view.listView.qtobj.selectedIndexes()
         if not indexes:
             return
 
-        clipboard = get_qt_app().clipboard()
+        clipboard = self.qt_app.clipboard()
         clipboard.setText(indexes[0].data())
 
     @log_func_call
     def copyIconPyAppCode(self):
-        indexes = self.window.listView.qtroot.selectedIndexes()
+        indexes = self.gui_view.listView.qtobj.selectedIndexes()
         if not indexes:
             return
 
@@ -122,7 +121,7 @@ class MainWindow(QtWindowController):
                 f"from {fontmod} import names as {shortname}_names  # noqa: E501\n"
                 f"{shortname}_{iconname}_ispec = IconSpec.generate_iconspec({fontclass}, glyph={shortname}_names.{iconname})  # noqa: E501\n")
 
-        clipboard = get_qt_app().clipboard()
+        clipboard = self.qt_app.clipboard()
         clipboard.setText(code)
 
     @log_func_call
@@ -130,8 +129,8 @@ class MainWindow(QtWindowController):
         """
         Update field to the name of the currently selected icon.
         """
-        win = self.window
-        indexes = win.listView.qtroot.selectedIndexes()
+        win = self.gui_view
+        indexes = win.listView.qtobj.selectedIndexes()
         if not indexes:
             win.nameField.setText("")
             win.copyButton.setDisabled(True)
@@ -155,15 +154,15 @@ class MainWindow(QtWindowController):
     @log_func_call
     def updateStyle(self, text: str):
         # qtawesome.reset_cache()
-        get_gui_app().set_theme(text)
+        self.gui_app.set_theme(text)
 
     @log_func_call
     def updateColumns(self):
-        win = self.window
+        win = self.gui_view
         win.listView.setColumns(win.comboColumns.currentData())
 
     @log_func_call(DEBUGLOW2, trace_only=True)
     def style_placeholder_text(self):
-        win = self.window
+        win = self.gui_view
         txtbox = win.lineEditFilter
         txtbox.style().polish(txtbox)

@@ -1,5 +1,4 @@
-from PySide2.QtCore import Qt, QStringListModel
-
+from pyapp.gui.qt import Qt, QStringListModel
 from ..utils import iconstring_to_iconspec
 
 

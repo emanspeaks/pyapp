@@ -1,1 +1,1 @@
-from .ctrl import MainWindow  # noqa: F401
+from .pres import MainWindow  # noqa: F401

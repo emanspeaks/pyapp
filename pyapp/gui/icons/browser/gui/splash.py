@@ -1,12 +1,10 @@
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import Qt
-
-from pyapp.gui.abc import QtSplashScreen
+from pyapp.gui.qt import QPixmap, Qt
+from pyapp.gui.splash import GuiSplashScreen
 
 from ..app import IconBrowserApp
 
 
-class SplashScreen(QtSplashScreen):
+class SplashScreen(GuiSplashScreen):
     def __init__(self):
         splash_path = IconBrowserApp.get_assets_dir()/'SMPTE_Color_Bars.png'
         pm = QPixmap(splash_path.as_posix())
