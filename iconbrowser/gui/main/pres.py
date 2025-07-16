@@ -3,6 +3,7 @@ from pyapp.gui.icons.iconfont.sources import THIRDPARTY_FONTSPEC
 from pyapp.gui.window import GuiWindow
 from pyapp.gui.dialogs.config import ConfigTreeDialog
 
+from ...version import __version__
 from ...logging import log_func_call, DEBUGLOW2
 from ...app import IconBrowserApp
 from ..constants import AUTO_SEARCH_TIMEOUT, ALL_COLLECTIONS
@@ -17,7 +18,7 @@ class MainWindow(GuiWindow[MainWindowView]):
     def __init__(self):
         # need filter models before creating the view
         self.create_filter_models()
-        super().__init__(IconBrowserApp.APP_NAME)
+        super().__init__(f'{IconBrowserApp.APP_NAME} v{__version__}')
         self.create_timer()
 
     def create_gui_view(self, basetitle: str, *args,
